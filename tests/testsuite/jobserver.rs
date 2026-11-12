@@ -71,10 +71,10 @@ fn jobserver_exists() {
         .file("src/lib.rs", "")
         .build();
 
-    // Explicitly use `-j3` to ensure that there's eventually going to be a
+    // Explicitly use `-j2` to ensure that there's eventually going to be a
     // token to read from `validate` above, since running the build script
     // itself consumes a token.
-    p.cargo("check -j3").run();
+    p.cargo("check -j2").run();
 }
 
 #[cargo_test]
@@ -109,7 +109,7 @@ all:
     p.cargo("install --path .").run();
     assert_has_installed_exe(paths::cargo_home(), name);
 
-    p.process(make).env("CARGO", cargo_exe()).arg("-j3").run();
+    p.process(make).env("CARGO", cargo_exe()).arg("-j2").run();
 }
 
 #[cargo_test]
@@ -194,13 +194,13 @@ test-runner:
     p.process(make)
         .env("CARGO", cargo_exe())
         .arg("run")
-        .arg("-j3")
+        .arg("-j2")
         .run();
     p.process(make)
         .env("PATH", path)
         .env("CARGO", cargo_exe())
         .arg("run-runner")
-        .arg("-j3")
+        .arg("-j2")
         .with_stderr_data(str![[r#"
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 [RUNNING] `runner target/debug/cargo-jobserver-check[EXE]`
@@ -211,13 +211,13 @@ this is a runner
     p.process(make)
         .env("CARGO", cargo_exe())
         .arg("test")
-        .arg("-j3")
+        .arg("-j2")
         .run();
     p.process(make)
         .env("PATH", path)
         .env("CARGO", cargo_exe())
         .arg("test-runner")
-        .arg("-j3")
+        .arg("-j2")
         .with_stderr_data(str![[r#"
 [FINISHED] `test` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 [RUNNING] unittests src/lib.rs (target/debug/build/cargo-jobserver-check/[HASH]/out/cargo_jobserver_check-[HASH][EXE])
@@ -355,6 +355,7 @@ all:
 
     let l = TcpListener::bind("127.0.0.1:0").unwrap();
     let addr = l.local_addr().unwrap();
+
     let child = thread::spawn(move || {
         let a1 = l.accept().unwrap();
         let a2 = l.accept().unwrap();
@@ -375,7 +376,6 @@ all:
     p.process(make)
         .env("CARGO", cargo_exe())
         .env("ADDR", addr.to_string())
-        .env("RUSTFLAGS", "-Zthreads=1")
         .arg("-j2")
         .run();
     child.join().unwrap();
