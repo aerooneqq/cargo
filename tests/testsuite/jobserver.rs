@@ -376,6 +376,7 @@ all:
     p.process(make)
         .env("CARGO", cargo_exe())
         .env("ADDR", addr.to_string())
+        .env("RUSTFLAGS", "-Zthreads=1")
         .arg("-j2")
         .run();
     child.join().unwrap();
